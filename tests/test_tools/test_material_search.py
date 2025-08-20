@@ -4,7 +4,7 @@ import unittest
 import tempfile
 
 from matvisor.tools.material_search import SearchByMaterial
-from matvisor.database import example_dataframe
+from matvisor.database import example_dataframe as df
 
 
 class TestSearchByMaterial(unittest.TestCase):
@@ -14,7 +14,7 @@ class TestSearchByMaterial(unittest.TestCase):
         self.temp_file = tempfile.NamedTemporaryFile(
             mode="w+", suffix=".csv", delete=False
         )
-        example_dataframe.to_csv(self.temp_file.name, index=False)
+        df.to_csv(self.temp_file.name, index=False)
 
     def tearDown(self):
         # Clean up the temporary file after each test
@@ -35,12 +35,9 @@ class TestSearchByMaterial(unittest.TestCase):
         self.assertEqual(len(results), 1)
         record = results[0]
         self.assertEqual(record["Material"], "Copper")
-        self.assertAlmostEqual(float(record["Density min"]), 8.90, places=2)
-        self.assertAlmostEqual(float(record["Density max"]), 8.98, places=2)
-        self.assertAlmostEqual(float(record["Melting min"]), 1083, places=2)
-        self.assertAlmostEqual(float(record["Melting max"]), 1085, places=2)
-        self.assertAlmostEqual(float(record["Young's modulus min"]), 110, places=2)
-        self.assertAlmostEqual(float(record["Young's modulus max"]), 120, places=2)
+        self.assertAlmostEqual(float(record["Density"]), 8.90, places=2)
+        self.assertAlmostEqual(float(record["Melting"]), 1083, places=2)
+        self.assertAlmostEqual(float(record["Young's Modulus"]), 110, places=2)
 
 
 if __name__ == "__main__":

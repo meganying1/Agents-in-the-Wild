@@ -17,14 +17,13 @@ example_materials = [
     ["Wood", 0.60, None, 10],
 ]
 
-#example_data = deepcopy(header)
-example_data = []
-for material in example_materials:
-    example_data.extend(material)
-
 # Create DataFrame
-example_dataframe = pd.DataFrame(example_materials, columns=properties)
+example_dataframe = pd.DataFrame(
+    data=example_materials,
+    columns=properties
+)
 
 
 if __name__ == "__main__":
     print(example_dataframe)
+    example_dataframe.to_csv("data/example_database.csv")

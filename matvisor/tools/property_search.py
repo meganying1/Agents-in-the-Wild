@@ -11,7 +11,7 @@ class SearchByProperty(Tool):
 
     name = "search_by_property"
     description = """
-    Search a material database based on specified property ranges to find materials matching the given criteria.
+    Search a material database by comparing single numeric property targets to database values and ranking materials by distance.
     """
     inputs = {
         "file_path": {
@@ -21,7 +21,7 @@ class SearchByProperty(Tool):
         },
         "properties": {
             "type": "any",
-            "description": "The properties to search for, with min and max values. Each property should be a dictionary with 'min' and 'max' keys.",
+            "description": "Dictionary mapping property name to a single numeric target (e.g., {\"Density\": 2.7, \"Melting\": 660}).",
             "nullable": True
         }
     }
@@ -39,50 +39,56 @@ class SearchByProperty(Tool):
             # Read in materials database
             materials_df = pd.read_csv(file_path)
 
-            # Find available properties in database
-            avail_properties = [col for col in materials_df.columns]
+            # Find available properties in database, excluding the label column
+            avail_properties = [col for col in materials_df.columns if col != "Material"]
 
-            # Initialize a list to store matching materials
-            matching_materials = []
+            def parse_value(val):
+                if val is None:
+                    return None
+                if isinstance(val, (int, float)):
+                    return float(val)
+                s = str(val).strip()
+                if s == "" or s.lower() == "none":
+                    return None
+                return float(s)
 
-            # Loop through each material in the database
-            for index, row in materials_df.iterrows():
-                match = True
+            # Pre-resolve requested properties to dataframe columns via fuzzy match
+            prop_map = {}
+            for requested, target in properties.items():
+                match, score = process.extractOne(requested, avail_properties)
+                if score < 50:
+                    return f"Error: Could not find property '{requested}'."
+                prop_map[requested] = match
 
-                # Check each property in the provided dictionary
-                for property_name, limits in properties.items():
-
-                    # Check if the property exists in the dataframe using fuzzy matching (threshold can be adjusted)
-                    matched_prop, score = process.extractOne(property_name, avail_properties)
-                    if score < 50:
-                        return f"Error: Could not find property '{property_name}'."
-                    
+            results = []
+            for _, row in materials_df.iterrows():
+                per_prop = {}
+                total_distance = 0.0
+                valid = True
+                for requested, match_col in prop_map.items():
+                    target_val = parse_value(properties[requested])
+                    if target_val is None:
+                        valid = False
+                        break
+                    db_val = row.get(match_col)
+                    # Skip rows where the database value is missing
+                    if pd.isna(db_val):
+                        valid = False
+                        break
                     try:
-                        # Assuming that given database has min and max values
-                        min_col = f"{matched_prop} min"
-                        max_col = f"{matched_prop} max"
+                        diff = abs(float(db_val) - float(target_val))
+                    except Exception:
+                        valid = False
+                        break
+                    per_prop[match_col] = diff
+                    total_distance += diff
+                if valid:
+                    result_row = {"Material": row.get("Material", ""), **per_prop, "total_distance": total_distance}
+                    results.append(result_row)
 
-                        if min_col not in row or max_col not in row:
-                            continue
-                            # return f"Error: Property columns for '{matched_prop}' not found."
-                        
-                        # Check if material is within property limits
-                        if "min" in limits and row[max_col] < limits["min"]:
-                            match = False
-                            break
-                        if "max" in limits and row[min_col] > limits["max"]:
-                            match = False
-                            break
-
-                    except Exception as e:
-                        return f"Error while checking property '{property}': {str(e)}"
-                
-                # If the material matches all criteria, add it to the results
-                if match:
-                    matching_materials.append(row["Material"])
-
-            # Return the list of matching materials
-            return str(matching_materials) if matching_materials else "No materials found matching the criteria."
+            # Sort by total_distance ascending
+            results.sort(key=lambda x: x["total_distance"])
+            return str(results) if results else "No materials found matching the criteria."
 
         except Exception as e:
             return f"Error: {str(e)}"
@@ -91,34 +97,24 @@ class SearchByProperty(Tool):
 if __name__ == "__main__":
     
     import os
-
-    # Create a small sample DataFrame
-    data = {
-        "Material": ["MaterialA", "MaterialB", "MaterialC"],
-        "Density min": [2.5, 3.0, 1.5],
-        "Density max": [3.5, 4.0, 2.5],
-        "Conductivity min": [100, 150, 80],
-        "Conductivity max": [200, 250, 120]
-    }
-    df = pd.DataFrame(data)
+    from matvisor.database import example_dataframe as df
 
     # Save to a temporary CSV file
-    test_csv = "test_materials.csv"
-    df.to_csv(test_csv, index=False)
+    sample_file = "example_database.csv"
+    df.to_csv(sample_file, index=False)
 
     # Create SearchByProperty instance
     search_tool = SearchByProperty()
 
     # Define properties dict that should match at least one material
     properties = {
-        "Density": {"min": 2.0, "max": 3.6},
-        "Conductivity": {"min": 90, "max": 210}
+        "Density": 2.7,
     }
 
     # Call forward method and print result
-    result = search_tool.forward(file_path=test_csv, properties=properties)
+    result = search_tool.forward(file_path=sample_file, properties=properties)
     print("Search result:", result)
 
     # Clean up test CSV file
-    if os.path.exists(test_csv):
-        os.remove(test_csv)
+    if os.path.exists(sample_file):
+        os.remove(sample_file)

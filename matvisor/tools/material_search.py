@@ -64,18 +64,15 @@ class SearchByMaterial(Tool):
 if __name__ == "__main__":
 
     import os
+    from matvisor.database import example_dataframe as df
 
-    sample_file = "sample_materials.csv"
-    sample_data = """Material,Density,Conductivity
-    Copper,8.96,401
-    Aluminum,2.70,237
-    Iron,7.87,80
-    """
-    with open(sample_file, "w") as f:
-        f.write(sample_data)
+    sample_file = "example_database.csv"
+    df.to_csv(sample_file, index=False)
 
     search_tool = SearchByMaterial()
     result = search_tool.forward(file_path=sample_file, material="Copper")
-    print(result)
+    print("Search result:", result)
 
-    os.remove(sample_file)
+    # Clean up test CSV file
+    if os.path.exists(sample_file):
+        os.remove(sample_file)
