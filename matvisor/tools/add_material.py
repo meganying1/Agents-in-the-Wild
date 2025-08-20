@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from smolagents import Tool
 from fuzzywuzzy import process
 
@@ -26,17 +27,17 @@ class AddMaterial(Tool):
         },
         "melting_temp": {
             "type": "string",
-            "description": "The range of melting temperature for the material to add in min-max format.",
+            "description": "The melting temperature value for the material (single number).",
             "nullable": True
         },
         "density": {
             "type": "string",
-            "description": "The range of density for the material to add in min-max format.",
+            "description": "The density value for the material (single number).",
             "nullable": True
         },
         "elastic_mod": {
             "type": "string",
-            "description": "The range of elastic modulus for the material to add in min-max format.",
+            "description": "The elastic modulus value for the material (single number).",
             "nullable": True
         }
     }
@@ -54,45 +55,54 @@ class AddMaterial(Tool):
             # Read in materials database
             materials_df = pd.read_csv(file_path)
 
-            # Parse the range strings into min and max values
-            def parse_range(rng):
-                if not rng: return None, None
-                parts = rng.replace(" ", "").split("-")
-                if len(parts) != 2:
-                    raise ValueError(f"Invalid range format: '{rng}'. Expected format 'min-max'.")
-                return float(parts[0]), float(parts[1])
+            # Parse a single numeric value or None
+            def parse_value(val):
+                if val is None:
+                    return None
+                if isinstance(val, (int, float)):
+                    return float(val)
+                val_str = str(val).strip()
+                if val_str == "" or val_str.lower() == "none":
+                    return None
+                try:
+                    return float(val_str)
+                except ValueError:
+                    raise ValueError(f"Invalid numeric value: '{val}'. Expected a single number or None.")
             
             # Get current property column names
             available_cols = [col for col in materials_df.columns]
 
-            melting_min, melting_max = parse_range(melting_temp)
-            density_min, density_max = parse_range(density)
-            elastic_min, elastic_max = parse_range(elastic_mod)
+            melting_val = parse_value(melting_temp)
+            density_val = parse_value(density)
+            elastic_val = parse_value(elastic_mod)
 
             # Function to find best match for a base property name
             def match_property(base_name):
-                min_match, _ = process.extractOne(base_name + " min", available_cols)
-                max_match, _ = process.extractOne(base_name + " max", available_cols)
-                return min_match, max_match
+                result = process.extractOne(base_name, available_cols)
+                return result[0] if result else None
             
             # Fuzzy match input properties to database columns
-            melting_min_col, melting_max_col = match_property("melting")
-            density_min_col, density_max_col = match_property("density")
-            elastic_min_col, elastic_max_col = match_property("young's modulus")
+            melting_col = match_property("melting")
+            density_col = match_property("density")
+            elastic_col = match_property("young's modulus")
+            if not all([melting_col, density_col, elastic_col]):
+                raise ValueError(
+                    f"Could not find matching columns in CSV. Available columns: {available_cols}"
+                )
             
             # Initialize new row
             new_row = {
                 "Material": material,
-                melting_min_col: melting_min,
-                melting_max_col: melting_max,
-                density_min_col: density_min,
-                density_max_col: density_max,
-                elastic_min_col: elastic_min,
-                elastic_max_col: elastic_max
+                melting_col: melting_val,
+                density_col: density_val,
+                elastic_col: elastic_val,
             }
 
-            # Append the new row to the database
-            materials_df = pd.concat([materials_df, pd.DataFrame([new_row])], ignore_index=True)
+            # Append the new row without triggering concat warnings by expanding index, then scalar-assign
+            next_idx = len(materials_df)
+            materials_df = materials_df.reindex(range(next_idx + 1))
+            for col in materials_df.columns:
+                materials_df.at[next_idx, col] = new_row.get(col, np.nan)
 
             # Save the updated database to file path
             materials_df.to_csv(file_path, index=False)
@@ -139,40 +149,25 @@ class AddMaterial(Tool):
 
 if __name__ == "__main__":
     """
-    Quick smoke test for AddMaterial.
-
-    Creates a tiny CSV with columns:
-      - Material
-      - melting min/max
-      - density min/max
-      - young's modulus min/max
-    Then calls AddMaterial to append a new material row.
+    Quick smoke test for AddMaterial. Calls AddMaterial to append a new material row.
     """
     import os
     import tempfile
+    from matvisor.database import example_dataframe
 
-    # Build a tiny starter CSV
-    df = pd.DataFrame([
-        {
-            "Material": "Aluminum",
-            "melting min": 600.0, "melting max": 700.0,
-            "density min": 2.6,   "density max": 2.8,
-            "young's modulus min": 68.0, "young's modulus max": 72.0
-        }
-    ])
     with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as tmp:
-        df.to_csv(tmp.name, index=False)
+        example_dataframe.to_csv(tmp.name, index=False)
         csv_path = tmp.name
 
     tool = AddMaterial()
     try:
-        # Add a new material with simple ranges
+        # Add a new material with single values
         result = tool.forward(
             file_path=csv_path,
             material="Testium",
-            melting_temp="100-200",
-            density="9.5-10.5",
-            elastic_mod="200-210"
+            melting_temp="150",
+            density="10.0",
+            elastic_mod="205"
         )
         print("[AddMaterial] forward ->", result)
 
