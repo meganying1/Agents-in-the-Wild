@@ -1,0 +1,7 @@
+pandas==2.3.1
+langchain-community==0.3.27
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.27.1
+llama_cpp_python==0.3.14
+wikipedia==1.4.0
+arxiv==2.2.0
