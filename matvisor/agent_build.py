@@ -36,6 +36,7 @@ def build_agent(model, verbosity="debug"):
             instructions=SEARCH_PROMPT,
             add_base_tools=False,
             max_steps=max_steps,
+            additional_authorized_imports=["pandas", "numpy", "fuzzywuzzy", "fuzzywuzzy.process"],
             verbosity_level=level,
         )
     except Exception:
@@ -46,6 +47,7 @@ def build_agent(model, verbosity="debug"):
             instructions=SEARCH_PROMPT,
             add_base_tools=False,
             max_steps=max_steps,
+            additional_authorized_imports=["pandas", "numpy", "fuzzywuzzy", "fuzzywuzzy.process"],
             verbosity=verbosity,  # "debug" | "info" | "quiet"
         )
 
