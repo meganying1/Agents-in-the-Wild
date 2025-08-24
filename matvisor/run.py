@@ -1,3 +1,13 @@
+def _extract_final_answer(text: str) -> str | None:
+    """
+    Extract the payload from final_answer('...') or final_answer("...").
+    Returns None if no exact final_answer call is present.
+    """
+    import re
+    if not isinstance(text, str):
+        return None
+    m = re.findall(r"final_answer\s*\(\s*['\"]([^'\"]+)['\"]\s*\)", text, flags=re.IGNORECASE)
+    return m[-1] if m else None
 """
 data_generation.py — standalone runner compatible with updated modules.
 
@@ -19,7 +29,9 @@ from matvisor.prompt import compile_question, append_results
 
 def run_pipeline(
         agent,
-        db_csv="data/example_database.csv",
+        design: str,
+        criterion: str,
+        db_csv="data/database.csv",
         results_csv="result/design_results.csv"
     ) -> str:
     """
@@ -30,35 +42,26 @@ def run_pipeline(
     
     # Read DB schema once and pass it to the model as a hard constraint
     db_cols = pd.read_csv(db_csv, nrows=0).columns.tolist()
+    db_cols = db_cols[2:]
     schema_hint = (
-        "Materials DB columns: " + ", ".join(db_cols) + ". "
+        "Materials DB columns represents material properties. The columns are: " + ", ".join(db_cols) + ". "
         "Only use these existing column names. Do NOT invent new columns. "
-        #"If a needed property is missing, reason using available columns instead of querying it; "
-        #"when updating the CSV, you may only read/write these columns. "
-        #"Return the final answer ONLY by calling final_answer('<one material name>') — ideally one that exists in the DB (Material column) or that you first add via add_material; do not include extra narration in the final_answer."
+        "Return the final answer ONLY by calling final_answer('<one material name>'). "
+        "Do not include any narration or extra text in the final_answer call. "
+        "If you must add a new material first, then call add_material, and finally call final_answer('<that material name>'). "
     )
-
-
-    for design in [
-        "kitchen utensil grip",
-        "safety helmet",
-        "underwater component",
-        "spacecraft component",
-    ]:
-        for criterion in [
-            "lightweight",
-            "heat resistant",
-            "corrosion resistant",
-            "high strength",
-        ]:
-            question = compile_question(design, criterion)
-            question += (
-                f"\n\n{schema_hint}\n"
-                f'When you need to read or update the database, call tools with file_path="{db_csv}".\n'
-                f'Save the results to {results_csv}.\n'
-            )
-            response = agent.run(question)
-            results = append_results(results, design, criterion, response)
+    question = compile_question(design, criterion)
+    question += (
+        f"\n\n{schema_hint}\n"
+        f'When you need to read or update the database, call tools with file_path="{db_csv}".\n'
+        f'Pick exactly one from the material names in the database or search and add to DB, then end with final_answer(<name>).\n'
+        f'Save the results to {results_csv}.\n'
+    )
+    response = agent.run(question)
+    # Prefer an exact final_answer('...') payload; otherwise fall back to raw response
+    extracted = _extract_final_answer(response)
+    payload = extracted if extracted is not None else response
+    results = append_results(results, design, criterion, payload)
 
     results.to_csv(results_csv, index=False)
     return results_csv

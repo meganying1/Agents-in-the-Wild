@@ -1,0 +1,6 @@
+Unnamed: 0,Material,Density,Melting,Young Modulus
+0.0,Copper,8.9,1083.0,110.0
+1.0,Aluminum,2.65,660.0,68.0
+2.0,Iron,7.85,1538.0,210.0
+3.0,Wood,0.6,,10.0
+,E,,,

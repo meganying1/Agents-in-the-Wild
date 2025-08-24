@@ -78,43 +78,52 @@ class LlamaCppModel(Model):
     def _patch_action_format(self, text: str) -> str:
         """
         Make the model output acceptable to smolagents' CodeAgent parser:
-        - convert Markdown fences to &lt;code&gt;...&lt;/code&gt; (via _convert_markdown_codeblocks)
+        - remove any stray <end_action> markers from inside content
+        - convert Markdown fences to <code>…</code> (via _convert_markdown_codeblocks)
         - if there's a stray closing </code>, remove it
         - if there is still no <code> block, try to extract code after a 'Code:' section or a final_answer(...) call
         - as a last resort, wrap the whole text into final_answer('...') to produce a valid action
-        - ensure the '<end_action>' terminator is present
+        - ensure the '<end_action>' terminator is present outside </code>
         """
         import re
 
-        s = text or ""
+        # Start with a safe string
+        s = (text or "").replace("\r\n", "\n").replace("\r", "\n")
 
-        # 1) Convert markdown fences if any
+        # 0) Strip any stray <end_action> early so it cannot end up inside the code block
+        s = s.replace("<end_action>", "")
+
+        # 1) Convert markdown code blocks if any
         s = self._convert_markdown_codeblocks(s)
 
         # 2) Fix orphan closing tag (model sometimes emits a bare </code>)
         if "</code>" in s and "<code>" not in s:
             s = s.replace("</code>", "").strip()
 
-        # 3) If we still don't have a code block, build one
+        # 3) If we still don't have a code block, construct one
         if "<code>" not in s:
-            # Try to capture code after "Code:" up to ``` or <end_action> or end
-            m = re.search(r"(?is)Code:\s*(?:```(?:py|python)?\n)?(.*?)(?:```|<end_action>|$)", s)
+            # Try to capture code after "Code:" up to ``` or end
+            m = re.search(r"(?is)Code:\s*(?:```(?:py|python)?\n)?(.*?)(?:```|$)", s)
             if m and m.group(1).strip():
                 block = m.group(1).strip()
             else:
                 # Try to salvage an existing final_answer(...) call
                 m2 = re.search(r"final_answer\s*\([^)]*\)", s, flags=re.IGNORECASE | re.DOTALL)
                 if m2:
-                    block = m2.group(0)
+                    block = m2.group(0).strip()
                 else:
-                    # Last resort: wrap the whole message as a final answer
+                    # Last resort: wrap the entire message as a final answer string
                     safe = s.strip().replace("\\", "\\\\").replace("\n", "\\n").replace("'", "\\'")
                     block = f"final_answer('{safe}')"
-            s = f"Thought: autopatched to valid action\n<code>\n{block}\n</code>"
+            s = f"<code>\n{block}\n</code>"
 
-        # 4) Ensure terminator
-        if "<end_action>" not in s:
-            s = s + "<end_action>"
+        # 4) Ensure the terminator exists and is OUTSIDE the </code> block
+        s = s.rstrip()
+        if not s.endswith("</code>"):
+            # If the model somehow didn't close the code block, force-close
+            s = s + ("\n" if not s.endswith("\n") else "") + "</code>"
+        # Append end marker on a new line for clarity
+        s = s + "\n<end_action>"
 
         return s
     def __init__(self, llm):
