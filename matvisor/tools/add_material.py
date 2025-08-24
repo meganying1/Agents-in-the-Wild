@@ -3,6 +3,12 @@ import numpy as np
 from smolagents import Tool
 from fuzzywuzzy import process
 
+from matvisor.database import (
+    name_property,
+    physical_properties,
+    properties_list
+)
+
 
 class AddMaterial(Tool):
     """
@@ -14,138 +20,106 @@ class AddMaterial(Tool):
     Add a material and its properties to the material database.
     """
 
-    inputs = {
+    inputs = {}
+    
+    file_path_input = {
         "file_path": {
             "type": "string",
             "description": "The path of the materials database file to update.",
-            "nullable": True
+            "nullable": False
         },
-        "material": {
+    }
+    inputs.update(file_path_input)
+
+    material_name_input = {
+        list(name_property.keys())[0]: {
             "type": "string",
-            "description": "The name of the material to add.",
-            "nullable": True
+            "description": name_property[list(name_property.keys())[0]],
+            "nullable": False
         },
-        "melting_temp": {
+    }
+    inputs.update(material_name_input)
+
+    for name in physical_properties:
+        inputs[name] = {
             "type": "string",
-            "description": "The melting temperature value for the material (single number).",
-            "nullable": True
-        },
-        "density": {
-            "type": "string",
-            "description": "The density value for the material (single number).",
-            "nullable": True
-        },
-        "elastic_mod": {
-            "type": "string",
-            "description": "The elastic modulus value for the material (single number).",
+            "description": physical_properties[name],
             "nullable": True
         }
-    }
+    
     output_type = "any"
 
     def __init__(self):
         super().__init__()
 
-    def forward(self, file_path: str | None = None, material: str | None = None, melting_temp=None, density=None, elastic_mod=None):
+    def forward(
+            self,
+            file_path: str | None = None,
+            material: str | None = None,
+            density: str | None = None,
+            melting: str | None = None,
+            young_modulus: str | None = None,
+        ):
+        """Append one material row using explicit optional arguments.
+        Any property not provided will be left as NaN in the CSV.
+        """
         if not file_path:
             return "Error: 'file_path' is required."
         if not material:
             return "Error: 'material' is required."
-        try: 
-            # Read in materials database
-            materials_df = pd.read_csv(file_path)
+        try:
+            # Load DB
+            df = pd.read_csv(file_path)
 
-            # Parse a single numeric value or None
+            # Helpers
             def parse_value(val):
                 if val is None:
-                    return None
+                    return np.nan
                 if isinstance(val, (int, float)):
                     return float(val)
-                val_str = str(val).strip()
-                if val_str == "" or val_str.lower() == "none":
-                    return None
+                s = str(val).strip()
+                if s == "" or s.lower() == "none" or s.lower() == "nan":
+                    return np.nan
                 try:
-                    return float(val_str)
+                    return float(s)
                 except ValueError:
-                    raise ValueError(f"Invalid numeric value: '{val}'. Expected a single number or None.")
-            
-            # Get current property column names
-            available_cols = [col for col in materials_df.columns]
+                    # keep as text if it cannot be parsed to float
+                    return s
 
-            melting_val = parse_value(melting_temp)
-            density_val = parse_value(density)
-            elastic_val = parse_value(elastic_mod)
+            def match_property(base_name: str):
+                # fuzzy match against known DB columns
+                res = process.extractOne(base_name, properties_list)
+                return res[0] if res else None
 
-            # Function to find best match for a base property name
-            def match_property(base_name):
-                result = process.extractOne(base_name, available_cols)
-                return result[0] if result else None
-            
-            # Fuzzy match input properties to database columns
-            melting_col = match_property("melting")
-            density_col = match_property("density")
-            elastic_col = match_property("young's modulus")
-            if not all([melting_col, density_col, elastic_col]):
-                raise ValueError(
-                    f"Could not find matching columns in CSV. Available columns: {available_cols}"
-                )
-            
-            # Initialize new row
-            new_row = {
-                "Material": material,
-                melting_col: melting_val,
-                density_col: density_val,
-                elastic_col: elastic_val,
+            # Build a full row with all columns set to NaN initially
+            full_row = {col: np.nan for col in df.columns}
+
+            # Set material name into the DB's name column (first key of name_property)
+            name_col = list(name_property.keys())[0]
+            full_row[name_col] = material
+
+            # Map explicit args -> DB columns via fuzzy matching
+            provided = {
+                "density": density,
+                "melting": melting,
+                "young_modulus": young_modulus,
             }
+            for base_key, raw_val in provided.items():
+                if raw_val is None:
+                    continue
+                col = match_property(base_key)
+                if col is None:
+                    continue
+                full_row[col] = parse_value(raw_val)
 
-            # Append the new row without triggering concat warnings by expanding index, then scalar-assign
-            next_idx = len(materials_df)
-            materials_df = materials_df.reindex(range(next_idx + 1))
-            for col in materials_df.columns:
-                materials_df.at[next_idx, col] = new_row.get(col, np.nan)
-
-            # Save the updated database to file path
-            materials_df.to_csv(file_path, index=False)
-            return f"Material '{material}' added/updated successfully."
+            # Append row
+            df = pd.concat([df, pd.DataFrame([full_row])], ignore_index=True)
+            df.to_csv(file_path, index=False)
+            return f"Material '{material}' added successfully."
 
         except Exception as e:
             return f"Error while adding material: {str(e)}"
         
-            # # Track missing properties
-            # missing = []
-
-            # # Loop through all required properties
-            # for prop in self.required_properties:
-            #     if prop in properties and isinstance(properties[prop], dict):
-            #         min_val = properties[prop].get("min", "")
-            #         max_val = properties[prop].get("max", "")
-            #     else:
-            #         min_val = ""
-            #         max_val = ""
-            #         missing.append(prop)
-
-            #     new_row[f"{prop} min"] = min_val
-            #     new_row[f"{prop} max"] = max_val
-
-            # try:
-            #     # Append new row to the DataFrame
-            #     self.materials_df = self.materials_df.append(new_row, ignore_index=True)
-            #     self.materials_df.to_csv('/Users/mying/Documents/Design Research Collective/Material Selection/Data/material_properties_minmax.csv', index=False)
-
-            #     if missing:
-            #         return (
-            #             f"Material '{material}' was added to the database with the available properties.\n\n"
-            #             f"However, some properties are missing:\n- " + "\n- ".join(missing) + "\n\n"
-            #             f"To find these, you can use:\n"
-            #             f"```python\nwikipedia_search(query=\"{material} {missing[0]} properties\")\n```\n"
-            #             f"Then update the material entry by re-running `add_material` with the missing data."
-            #         )
-            #     else:
-            #         return f"Material '{material}' successfully added with all properties."
-
-            # except Exception as e:
-            #     return f"Error while adding material: {str(e)}"
-            
 
 if __name__ == "__main__":
     """
@@ -165,9 +139,8 @@ if __name__ == "__main__":
         result = tool.forward(
             file_path=csv_path,
             material="Testium",
-            melting_temp="150",
-            density="10.0",
-            elastic_mod="205"
+            melting="150",
+            young_modulus="200",
         )
         print("[AddMaterial] forward ->", result)
 

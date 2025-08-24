@@ -1,5 +1,5 @@
-,Material,Density,Melting,Young's Modulus
-0,Copper,8.9,1083.0,110
-1,Aluminum,2.65,660.0,68
-2,Iron,7.85,1538.0,210
-3,Wood,0.6,,10
+Material,Density,Melting,Young Modulus
+Copper,8.9,1083.0,110
+Aluminum,2.65,660.0,68
+Iron,7.85,1538.0,210
+Wood,0.6,,10
