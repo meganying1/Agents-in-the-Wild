@@ -33,7 +33,7 @@ class TestSearchByProperty(unittest.TestCase):
         self.assertIsInstance(results, list)
         self.assertGreaterEqual(len(results), 1)
         # Top-1 should be Aluminum
-        self.assertEqual(results[0]["Material"], "Aluminum")
+        self.assertEqual(results[0]["material"], "Aluminum")
         # total_distance should be smallest for the first result
         self.assertLessEqual(results[0]["total_distance"], results[-1]["total_distance"])
 
@@ -47,7 +47,7 @@ class TestSearchByProperty(unittest.TestCase):
         results = ast.literal_eval(result_str)
         self.assertIsInstance(results, list)
         self.assertGreaterEqual(len(results), 1)
-        self.assertEqual(results[0]["Material"], "Copper")
+        self.assertEqual(results[0]["material"], "Copper")
 
     def test_property_search_unknown_property(self):
         """

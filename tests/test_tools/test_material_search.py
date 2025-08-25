@@ -34,10 +34,10 @@ class TestSearchByMaterial(unittest.TestCase):
         self.assertIsInstance(results, list)
         self.assertEqual(len(results), 1)
         record = results[0]
-        self.assertEqual(record["Material"], "Copper")
-        self.assertAlmostEqual(float(record["Density"]), 8.90, places=2)
-        self.assertAlmostEqual(float(record["Melting"]), 1083, places=2)
-        self.assertAlmostEqual(float(record["Young's Modulus"]), 110, places=2)
+        self.assertEqual(record["material"], "Copper")
+        self.assertAlmostEqual(float(record["density"]), 8.90, places=2)
+        self.assertAlmostEqual(float(record["melting"]), 1083, places=2)
+        self.assertAlmostEqual(float(record["young_modulus"]), 110, places=2)
 
 
 if __name__ == "__main__":

@@ -39,7 +39,7 @@ class SearchByMaterial(Tool):
             materials_df = pd.read_csv(file_path)
 
             # Get list of materials available in database
-            material_names = materials_df["Material"].dropna().tolist()
+            material_names = materials_df["material"].dropna().tolist()
 
             # Find properties in database using fuzzy matching
             top_matches = process.extract(material, material_names, limit=5)
@@ -50,7 +50,7 @@ class SearchByMaterial(Tool):
                 return f"Error: No close matches found for material '{material}'."
 
             # Get all matching materials
-            matching_rows = materials_df[materials_df["Material"].isin(filtered_matches)]
+            matching_rows = materials_df[materials_df["material"].isin(filtered_matches)]
 
             # Convert results to a list of dictionaries
             results = matching_rows.to_dict(orient='records')

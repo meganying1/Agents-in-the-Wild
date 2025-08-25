@@ -6,7 +6,7 @@ from fuzzywuzzy import process
 class SearchByProperty(Tool):
     """
     Create tool for searching materials database
-    Currently requires agent to pass in a properties dictionary, may need to be changed.
+    Requires agent to pass in a properties dictionary.
     """
 
     name = "search_by_property"
@@ -17,7 +17,7 @@ class SearchByProperty(Tool):
         "file_path": {
             "type": "string",
             "description": "The path of the materials database file to search.",
-            "nullable": True
+            "nullable": False
         },
         "properties": {
             "type": "any",
@@ -83,7 +83,7 @@ class SearchByProperty(Tool):
                     per_prop[match_col] = diff
                     total_distance += diff
                 if valid:
-                    result_row = {"Material": row.get("Material", ""), **per_prop, "total_distance": total_distance}
+                    result_row = {"material": row.get("material", ""), **per_prop, "total_distance": total_distance}
                     results.append(result_row)
 
             # Sort by total_distance ascending
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     # Define properties dict that should match at least one material
     properties = {
-        "Density": 2.7,
+        "density": 2.7,
     }
 
     # Call forward method and print result
