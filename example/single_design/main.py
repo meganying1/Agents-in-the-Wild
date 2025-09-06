@@ -1,6 +1,6 @@
 import os
 from matvisor.run import run_pipeline
-from matvisor.agent_build import build_agent
+from matvisor.agent import build_agent
 from matvisor.models_llama import LlamaCppModel, load_llama
 
 
@@ -12,12 +12,15 @@ os.environ.setdefault("FORCE_CUDA", "1")
 
 llm = load_llama("1.5")  # loads Qwen2.5-0.5B-Instruct GGUF via llama_cpp
 model = LlamaCppModel(llm)
-agent = build_agent(model, verbosity="info")
 here = os.path.dirname(os.path.abspath(__file__))
+agent = build_agent(
+    model,
+    database_path=os.path.join(here, "database.csv"),
+    verbosity="info"
+)
 run_pipeline(
     agent,
     design=design,
     criterion=criterion,
-    db_csv=os.path.join(here, "database.csv"),
-    results_csv=os.path.join(here, "result.csv")
+    results_path=os.path.join(here, "result.csv")
 )

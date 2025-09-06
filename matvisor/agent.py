@@ -10,7 +10,7 @@ from matvisor.tools import (
 from matvisor.prompt_old import SEARCH_PROMPT
 
 
-def build_agent(model, verbosity="debug"):
+def build_agent(model, database_path: str, verbosity="debug"):
     tools = [
         FinalAnswerTool(),
         AddMaterial(),
