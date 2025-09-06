@@ -1,4 +1,4 @@
 material,density,melting,young_modulus
-Copper,8.9,1083.0,110
-Aluminum,2.65,660.0,68
-Iron,7.85,1538.0,210
+copper,8.9,1083.0,110.0
+aluminum,2.65,660.0,68.0
+iron,7.85,1538.0,210.0

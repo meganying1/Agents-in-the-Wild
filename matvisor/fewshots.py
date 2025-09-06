@@ -2,6 +2,9 @@ FEWSHOTS = """
 FEWSHOT Examples:
 """
 
+# 1. Search Wikipedia for relevant materials
+# 2. Search database for material name
+# 3. Return material name
 example_1 = """
 Task: "You are tasked with designing a cutting board. It should be lightweight. What material would you recommend for this application?"
 
@@ -19,16 +22,20 @@ print(observation)
 </code>
 Observation: "{'Material': 'Wood', 'Density min': 0.3, 'Density max': 1.3, 'Thermal conductivity min': 0.1, 'Thermal conductivity max': 0.2}"
 
-Thought: Now I know wood is lightweight and commonly used. Let's return the result.
+Thought: Now I know wood is lightweight and commonly used. Let's return it as the result.
 <code>
 final_answer('wood')
 </code>
 """
 
+# 1. Search Wikipedia for relevant materials
+# 2. Search database using material properties
+# 3. Search material name in arXiv for validation
+# 4. Return material name
 example_2 = """
 Task: "You are tasked with designing a cooking pan. It should have a high melting point. What material would you recommend for this application?"
 
-Thought: I will search Wikipedia (or a summary) for cookware properties.
+Thought: I will search Wikipedia to know cookware properties.
 <code>
 observation = wikipedia_search(query='necessary properties of cooking pans')
 print(observation)
@@ -40,30 +47,29 @@ Thought: I will search the database for high melting temperature along with good
 # (In your real tool you'd filter by properties; here we just mock the result)
 print("Matching materials found include medium carbon steels and low alloy steels.")
 </code>
-Observation: "Matching materials found include medium carbon steels and low alloy steels."
+Observation: "Matching materials found include steels."
 
-Thought: I'll check arXiv summaries for these materials in pans. First, I'll check medium carbon steels. Next round, I'll check low alloy steels.
+Thought: I'll check arXiv summaries for steels in pans to validate my answer.
 <code>
-print(arxiv_search(query='medium carbon steel use in cooking pans'))
+print(arxiv_search(query='Steel use in cooking pans'))
 </code>
-Observation: "Medium carbon steels is used in pans for heat resistance, durability, and toughness."
+Observation: "Steel is used in pans for heat resistance, durability, and toughness."
 
-Thought: I'll check arXiv summaries for these materials in pans. This time, I'll check low alloy steels.
+Thought: I found the answer to return.
 <code>
-print(arxiv_search(query='low alloy steels use in cooking pans'))
-</code>
-Observation: "Low alloy steels is used in pans for heat resistance, durability, and toughness."
-
-Thought: They are both great candidates. Return one of them randomly.
-<code>
-final_answer('medium carbon steel')
+final_answer('steel')
 </code>
 """
 
+# 1. Search Wikipedia for relevant materials and found two candidate materials. Randomly choose one.
+# 2. Search database for material name, not found.
+# 3. Search Wikipedia for material properties.
+# 4. Add material to database.
+# 5. Return material name.
 example_3 = """
 Task: "You are tasked with designing a cooking pan. It should have a low weight for maximum protability. What material would you recommend for this product?"
 
-Thought: I will search Wikipedia (or a summary) for cookware properties.
+Thought: I will search Wikipedia for light-weight cookware properties.
 <code>
 observation = wikipedia_search(query='necessary properties of portable low-weight cooking pans')
 print(observation)

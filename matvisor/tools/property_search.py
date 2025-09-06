@@ -11,33 +11,32 @@ class SearchByProperty(Tool):
 
     name = "search_by_property"
     description = """
-    Search a material database by comparing single numeric property targets to database values and ranking materials by distance.
+    Search the material database by comparing target material properties to database values and ranking material names by distance.
     """
     inputs = {
-        "file_path": {
-            "type": "string",
-            "description": "The path of the materials database file to search.",
-            "nullable": False
-        },
         "properties": {
             "type": "any",
-            "description": "Dictionary mapping property name to a single numeric target (e.g., {\"density\": 2.7, \"melting\": 660}).",
-            "nullable": True
+            "description": """
+            Dictionary of target properties to search for. Keys can only include the following:
+                - density: The density value for the material. Units: g/cm^3. Single float number.
+                - melting: The melting temperature value for the material. Units: °C. Single float number.
+                - young_modulus: The Young modulus value for the material. Units: SI. Single float number.
+            """,
+            "nullable": False
         }
     }
     output_type = "any"
 
-    def __init__(self):
+    def __init__(self, file_path: str):
+        self.file_path = file_path
         super().__init__()
 
-    def forward(self, file_path: str | None = None, properties: dict | None = None) -> str:
-        if not file_path:
-            return "Error: 'file_path' is required."
+    def forward(self, properties: dict | None = None) -> str:
         if not properties:
             return "Error: 'properties' is required."
         try:
             # Read in materials database
-            materials_df = pd.read_csv(file_path)
+            materials_df = pd.read_csv(self.file_path)
 
             # Find available properties in database, excluding the label column
             avail_properties = [col for col in materials_df.columns if col != "material"]

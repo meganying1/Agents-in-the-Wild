@@ -21,56 +21,42 @@ class AddMaterial(Tool):
     """
 
     inputs = {
-        "file_path": {
-            "type": "string",
-            "description": "The path of the materials database file to update.",
-            "nullable": False
-        },
         "material": {
             "type": "string",
             "description": "The name of the material to add.",
             "nullable": False
         },
-        "density": {
-            "type": "string",
-            "description": "The density value for the material. Units: g/cm^3. Single float number.",
-            "nullable": True
-        },
-        "melting": {
-            "type": "string",
-            "description": "The melting temperature value for the material. Units: °C. Single float number.",
-            "nullable": True
-        },
-        "young_modulus": {
-            "type": "string",
-            "description": "The Young modulus value for the material. Units: SI. Single float number.",
-            "nullable": True
+        "properties": {
+            "type": "any",
+            "description": """
+            Dictionary of target properties to search for. Keys can only include the following:
+                - density: The density value for the material. Units: g/cm^3. Single float number.
+                - melting: The melting temperature value for the material. Units: °C. Single float number.
+                - young_modulus: The Young modulus value for the material. Units: SI. Single float number.
+            """,
+            "nullable": False
         }
     }
     output_type = "string"
 
-    def __init__(self):
+    def __init__(self, file_path: str):
+        self.file_path = file_path
         super().__init__()
 
     def forward(
             self,
-            file_path: str | None = None,
             material: str | None = None,
-            density: str | None = None,
-            melting: str | None = None,
-            young_modulus: str | None = None,
+            properties: dict | None = None
         ):
         """
         Append one material row using explicit optional arguments.
         Any property not provided will be left as NaN in the CSV.
         """
-        if not file_path:
-            return "Error: 'file_path' is required."
         if not material:
             return "Error: 'material' is required."
         try:
             # Load DB
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(self.file_path)
 
             # Helpers
             def parse_value(val):
@@ -100,11 +86,7 @@ class AddMaterial(Tool):
             full_row[name_col] = material
 
             # Map explicit args -> DB columns via fuzzy matching
-            provided = {
-                "density": density,
-                "melting": melting,
-                "young_modulus": young_modulus,
-            }
+            provided = properties
             for base_key, raw_val in provided.items():
                 if raw_val is None:
                     continue
@@ -115,7 +97,7 @@ class AddMaterial(Tool):
 
             # Append row
             df = pd.concat([df, pd.DataFrame([full_row])], ignore_index=True)
-            df.to_csv(file_path, index=False)
+            df.to_csv(self.file_path, index=False)
             return f"Material '{material}' added successfully."
 
         except Exception as e:

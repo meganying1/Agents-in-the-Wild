@@ -7,16 +7,16 @@ from matvisor.tools import (
     SearchByProperty,
     WikipediaSearch,
 )
-from matvisor.prompt_old import SEARCH_PROMPT
+from matvisor.prompt import SEARCH_PROMPT
 
 
 def build_agent(model, database_path: str, verbosity="debug"):
     tools = [
         FinalAnswerTool(),
-        AddMaterial(),
+        AddMaterial(file_path=database_path),
         ArxivSearch(),
-        SearchByMaterial(),
-        SearchByProperty(),
+        SearchByMaterial(file_path=database_path),
+        SearchByProperty(file_path=database_path),
         WikipediaSearch(),
     ]
     max_steps = 10
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     from models_llama import FakeModel
 
-    agent = build_agent(FakeModel(), verbosity="debug")
+    agent = build_agent(FakeModel(), database_path="somewhere", verbosity="debug")
 
     # show tool "names" regardless of whether agent.tools are instances or strings
     tools_field = getattr(agent, "tools", [])

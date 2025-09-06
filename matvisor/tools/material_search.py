@@ -13,11 +13,6 @@ class SearchByMaterial(Tool):
     Search a material database for a material to find its properties.
     """
     inputs = {
-        "file_path": {
-            "type": "string",
-            "description": "The path of the materials database file to search.",
-            "nullable": True
-        },
         "material": {
             "type": "string",
             "description": "The material to search for.",
@@ -26,17 +21,16 @@ class SearchByMaterial(Tool):
     }
     output_type = "any"
 
-    def __init__(self):
+    def __init__(self, file_path: str):
+        self.file_path = file_path
         super().__init__()
 
-    def forward(self, file_path: str | None = None, material: str | None = None) -> str:
-        if not file_path:
-            return "Error: 'file_path' is required."
+    def forward(self, material: str | None = None) -> str:
         if not material:
             return "Error: 'material' is required."
         try:
             # Read in materials database
-            materials_df = pd.read_csv(file_path)
+            materials_df = pd.read_csv(self.file_path)
 
             # Get list of materials available in database
             material_names = materials_df["material"].dropna().tolist()
