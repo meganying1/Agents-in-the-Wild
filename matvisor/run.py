@@ -24,7 +24,7 @@ from matvisor.agent_build import build_agent
 from matvisor.models_llama import FakeModel
 
 # Prompt helpers remain in matvisor.prompt
-from matvisor.prompt import compile_question, append_results
+from matvisor.prompt_old import compile_question, append_results
 
 
 def run_pipeline(

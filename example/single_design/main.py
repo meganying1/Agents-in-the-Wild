@@ -10,7 +10,7 @@ criterion = "heat resistant"
 # Real scenarios: always use the actual local LLM when running main.py
 os.environ.setdefault("FORCE_CUDA", "1")
 
-llm = load_llama("0.5")  # loads Qwen2.5-0.5B-Instruct GGUF via llama_cpp
+llm = load_llama("1.5")  # loads Qwen2.5-0.5B-Instruct GGUF via llama_cpp
 model = LlamaCppModel(llm)
 agent = build_agent(model, verbosity="info")
 here = os.path.dirname(os.path.abspath(__file__))

@@ -20,34 +20,34 @@ class AddMaterial(Tool):
     Add a material and its properties to the material database.
     """
 
-    inputs = {}
-    
-    file_path_input = {
+    inputs = {
         "file_path": {
             "type": "string",
             "description": "The path of the materials database file to update.",
             "nullable": False
         },
-    }
-    inputs.update(file_path_input)
-
-    material_name_input = {
-        list(name_property.keys())[0]: {
+        "material": {
             "type": "string",
-            "description": name_property[list(name_property.keys())[0]],
+            "description": "The name of the material to add.",
             "nullable": False
         },
-    }
-    inputs.update(material_name_input)
-
-    for name in physical_properties:
-        inputs[name] = {
+        "density": {
             "type": "string",
-            "description": physical_properties[name],
+            "description": "The density value for the material. Units: g/cm^3. Single float number.",
+            "nullable": True
+        },
+        "melting": {
+            "type": "string",
+            "description": "The melting temperature value for the material. Units: °C. Single float number.",
+            "nullable": True
+        },
+        "young_modulus": {
+            "type": "string",
+            "description": "The Young modulus value for the material. Units: SI. Single float number.",
             "nullable": True
         }
-    
-    output_type = "any"
+    }
+    output_type = "string"
 
     def __init__(self):
         super().__init__()
@@ -60,7 +60,8 @@ class AddMaterial(Tool):
             melting: str | None = None,
             young_modulus: str | None = None,
         ):
-        """Append one material row using explicit optional arguments.
+        """
+        Append one material row using explicit optional arguments.
         Any property not provided will be left as NaN in the CSV.
         """
         if not file_path:

@@ -1,22 +1,45 @@
-# agent_build.py
-from smolagents import CodeAgent, FinalAnswerTool
-from matvisor.tools import (
-    AddMaterial,
-    ArxivSearch,
-    SearchByMaterial,
-    SearchByProperty,
-    WikipediaSearch,
-)
-from matvisor.prompt_old import SEARCH_PROMPT
 
+import os
+from smolagents import Model
+
+import llama_cpp
+from smolagents import Tool, CodeAgent, FinalAnswerTool
+from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
+
+
+SEARCH_PROMPT = ""
+
+
+class WikipediaSearch(Tool):
+    """
+    Create tool for searching Wikipedia
+    """
+
+    name = "wikipedia_search"
+    description = "Search Wikipedia, the free encyclopedia."
+    inputs = {
+        "query": {
+            "type": "string",
+            "description": "The search terms",
+            "nullable": True
+        },
+    }
+    output_type = "string"
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, query: str | None = None) -> str:
+        if not query:
+            return "Error: 'query' is required."
+        wikipedia_api = WikipediaAPIWrapper(top_k_results=5)
+        answer = wikipedia_api.run(query)
+        return answer
+    
 
 def build_agent(model, verbosity="debug"):
     tools = [
         FinalAnswerTool(),
-        AddMaterial(),
-        ArxivSearch(),
-        SearchByMaterial(),
-        SearchByProperty(),
         WikipediaSearch(),
     ]
     max_steps = 10
@@ -51,29 +74,4 @@ def build_agent(model, verbosity="debug"):
             additional_authorized_imports=["pandas", "numpy", "fuzzywuzzy", "fuzzywuzzy.process"],
             verbosity=verbosity,  # "debug" | "info" | "quiet"
         )
-
-
-if __name__ == "__main__":
-
-    from models_llama import FakeModel
-
-    agent = build_agent(FakeModel(), verbosity="debug")
-
-    # show tool "names" regardless of whether agent.tools are instances or strings
-    tools_field = getattr(agent, "tools", [])
-    tool_names = []
-    for t in tools_field:
-        if isinstance(t, str):
-            tool_names.append(t)
-        elif hasattr(t, "name"):
-            tool_names.append(t.name)
-        else:
-            tool_names.append(type(t).__name__)
-    print("TOOLS:", tool_names)
-
-    # show python-executor callables (what the executor will allow to run)
-    af = getattr(agent.python_executor, "additional_functions", None)
-    print("ADDITIONAL_FUNCTIONS:", sorted(af.keys()) if isinstance(af, dict) else af)
-
-    out = agent.run("Say 'hello' then call final_answer('done').")
-    print("[agent_build] Agent run ->", out)
+    

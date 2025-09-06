@@ -21,7 +21,7 @@ class SearchByProperty(Tool):
         },
         "properties": {
             "type": "any",
-            "description": "Dictionary mapping property name to a single numeric target (e.g., {\"Density\": 2.7, \"Melting\": 660}).",
+            "description": "Dictionary mapping property name to a single numeric target (e.g., {\"density\": 2.7, \"melting\": 660}).",
             "nullable": True
         }
     }
@@ -40,7 +40,7 @@ class SearchByProperty(Tool):
             materials_df = pd.read_csv(file_path)
 
             # Find available properties in database, excluding the label column
-            avail_properties = [col for col in materials_df.columns if col != "Material"]
+            avail_properties = [col for col in materials_df.columns if col != "material"]
 
             def parse_value(val):
                 if val is None:
