@@ -24,12 +24,14 @@ for design in designs:
         print("[main] Using local llama.cpp model for real scenarios.")
         llm = load_llama("0.5")  # loads Qwen2.5-0.5B-Instruct GGUF via llama_cpp
         model = LlamaCppModel(llm)
-        agent = build_agent(model, verbosity="info")
-        out_path = run_pipeline(
+        agent = build_agent(
+            model,
+            database_path=os.path.join(here, "database.csv"),
+            verbosity="info"
+        )
+        run_pipeline(
             agent,
             design=design,
             criterion=criterion,
-            db_csv=os.path.join(here, "data/example_database.csv"),
-            results_csv=os.path.join(here, "result/design_results.csv")
+            results_path=os.path.join(here, "result.csv")
         )
-        print(f"[main] wrote {out_path}")

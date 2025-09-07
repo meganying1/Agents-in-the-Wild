@@ -8,14 +8,14 @@ At each step, in the 'Thought:' sequence, you should first explain your reasonin
 Then in the 'Code:' sequence, you should write the code in simple Python. The code sequence must end with '<end_action>' sequence.
 During each intermediate step, you can use 'print()' to save whatever important information you will then need.
 These print outputs will then appear in the 'Observation:' field, which will be available as input for the next step.
-In the end you have to return a final answer using the `final_answer` tool. Final answer must be only one material name that, at the moment, exists in the database.
-Do not include any narration or extra text in the final_answer call. Do not include two seperate material names in the final_answer call.
+In the end you have to return a final answer using the `final_answer` tool. Final answer must be ONLY one material name that, at the moment, exists in the database.
+Do not include any narration or extra text in the final_answer call. Do not include multiple material names in the final_answer call. ONLY return one material name!
 If you found a material that does not exist in the database, you must first add it using the `add_material` tool to the database.
 
-To do so, you have been given access to a list of tools. These tools are basically Python functions which you can call with code.
-Don't invent tool names or change case.
-You are provided with the following tools:
-{{tool_description}}
+To do so, you have been given access to a list of tools. These tools are custom Python functions which you can call with code.
+Don't invent new tool names or change case.
+You are provided with ONLY the following tools:
+{{tool_descriptions}}
 
 If you solve the task correctly, you will receive a reward of $1,000,000. Now begin!
 """
