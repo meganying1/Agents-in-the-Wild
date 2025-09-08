@@ -8,6 +8,7 @@ from matvisor.tools import (
     WikipediaSearch,
 )
 from matvisor.prompt import SEARCH_PROMPT
+from matvisor.fewshots import FEWSHOTS
 
 
 def build_agent(model, database_path: str, verbosity="debug"):
@@ -34,7 +35,7 @@ def build_agent(model, database_path: str, verbosity="debug"):
         return CodeAgent(
             tools=tools,
             model=model,
-            instructions=SEARCH_PROMPT,
+            instructions=SEARCH_PROMPT + "\n\n" + FEWSHOTS,
             add_base_tools=False,
             max_steps=max_steps,
             additional_authorized_imports=["pandas", "numpy", "fuzzywuzzy", "fuzzywuzzy.process"],
@@ -45,7 +46,7 @@ def build_agent(model, database_path: str, verbosity="debug"):
         return CodeAgent(
             tools=tools,
             model=model,
-            instructions=SEARCH_PROMPT,
+            instructions=SEARCH_PROMPT + "\n\n" + FEWSHOTS,
             add_base_tools=False,
             max_steps=max_steps,
             additional_authorized_imports=["pandas", "numpy", "fuzzywuzzy", "fuzzywuzzy.process"],

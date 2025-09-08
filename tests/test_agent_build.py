@@ -1,5 +1,5 @@
 import unittest
-from matvisor import agent_build, models_llama
+from matvisor import agent, models_llama
 
 
 class TestAgentBuild(unittest.TestCase):
@@ -8,7 +8,7 @@ class TestAgentBuild(unittest.TestCase):
         """
         Test building agent with fake model runs
         """
-        agent = agent_build.build_agent(models_llama.FakeModel(), verbosity="debug")
+        agent = agent.build_agent(models_llama.FakeModel(), verbosity="debug")
         out = agent.run("Say 'hello' then call final_answer('done').")
         self.assertIsInstance(out, str)
         self.assertEqual(out.strip().lower(), "done")

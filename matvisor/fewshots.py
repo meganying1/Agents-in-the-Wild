@@ -103,11 +103,51 @@ final_answer('aluminium')
 </code>
 """
 
+# 1. Search Wikipedia for relevant materials
+# 2. Search database for material name
+# 3. Return material name
+example_4 = """
+Task: "You are tasked with designing a cutting board. It should be lightweight. What material would you recommend for this application?"
+
+Thought: I will search Wikipedia to find common materials used in cutting boards.
+<code>
+observation = wikipedia_search(query='common materials used in cutting boards')
+print(observation)
+</code>
+Observation: "A material commonly used in cutting boards is wood."
+
+Thought: Now I will search the materials database to find properties of wood.
+<code>
+observation = search_by_material(material="wood")
+print(observation)
+</code>
+Observation: "Error: No close matches found for material 'wood'."
+
+Thought: Wood doesn't exist on database. I need to find the wood properties on wikipedia and add it to the database.
+<code>
+observation = wikipedia_search(query='wood')
+print(observation)
+</code>
+Observation: "{'material': 'wood', 'density': 0.3, 'melting': None}"
+
+Thought: Adding wood to the database.
+<code>
+observation = add_material(material='wood', properties={'material': 'wood', 'density': 0.3, 'melting': None})
+print(observation)
+</code>
+Observation: "Wood added to the database."
+
+Thought: I'll return wood as the final asnwer. It seems like a good choice with good properties.
+<code>
+final_answer('wood')
+</code>
+"""
+
 examples = [
     example_1,
     example_2,
     example_3,
-#    example_4,
+    example_4,
 #    example_5,
 #    example_6,
 #    example_7,

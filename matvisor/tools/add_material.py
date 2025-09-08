@@ -30,9 +30,9 @@ class AddMaterial(Tool):
             "type": "any",
             "description": """
             Dictionary of target properties to search for. Keys can only include the following:
-                - density: The density value for the material. Units: g/cm^3. Single float number.
-                - melting: The melting temperature value for the material. Units: °C. Single float number.
-                - young_modulus: The Young modulus value for the material. Units: SI. Single float number.
+                - density: The density value for the material. Unit: g/cm^3. Single float number.
+                - melting: The melting temperature value for the material. Unit: °C. Single float number.
+                - young_modulus: The Young modulus value for the material. Unit: SI. Single float number.
             """,
             "nullable": False
         }
