@@ -22,7 +22,7 @@ criterions = [
 for design in designs:
     for criterion in criterions:
         print("[main] Using local llama.cpp model for real scenarios.")
-        llm = load_llama("0.5")  # loads Qwen2.5-0.5B-Instruct GGUF via llama_cpp
+        llm = load_llama("3")   # loads Qwen2.5-<NUMBER>B-Instruct GGUF via llama_cpp
         model = LlamaCppModel(llm)
         agent = build_agent(
             model,

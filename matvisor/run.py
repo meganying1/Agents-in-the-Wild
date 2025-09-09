@@ -37,7 +37,10 @@ def run_pipeline(
     """
     # Make results directory
     os.makedirs(os.path.dirname(results_path) or ".", exist_ok=True)
-    results = pd.DataFrame(columns=["design", "criteria", "response"])
+    if os.path.exists(results_path):
+        results = pd.read_csv(results_path)
+    else:
+        results = pd.DataFrame(columns=["design", "criteria", "response"])
     question = compile_question(design, criterion)
     response = agent.run(question)
     results = append_results(results, design, criterion, response)
@@ -45,11 +48,11 @@ def run_pipeline(
     return results_path
 
 def append_results(results, design, criterion, response):
-    results = results._append({
+    results.loc[len(results)] = {
         'design': design,
         'criteria': criterion,
         'response': response
-    }, ignore_index=True)
+    }
     return results
 
 
@@ -70,8 +73,12 @@ if __name__ == "__main__":
 
     # Tiny one-iteration pipeline to exercise output code paths
     os.makedirs("data", exist_ok=True)
-    results = pd.DataFrame(columns=["design", "criteria", "response"])
+    results_path = "data/test_fast.csv"
+    if os.path.exists(results_path):
+        results = pd.read_csv(results_path)
+    else:
+        results = pd.DataFrame(columns=["design", "criteria", "response"])
     q = compile_question("kitchen utensil grip", "lightweight")
     r = agent.run(q)
     results = append_results(results, "kitchen utensil grip", "lightweight", r)
-    results.to_csv("data/test_fast.csv", index=False)
+    results.to_csv(results_path, index=False)
