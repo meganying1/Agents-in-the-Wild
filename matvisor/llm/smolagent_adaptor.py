@@ -11,7 +11,7 @@ class SmolagentsAdapter(Model):
         super().__init__()
         self.llama = llama_model
         self.logger = logger
-        self.step = 0
+        self.step = 1
 
     def _normalize_content(self, content):
         # If it's already a string, done
@@ -63,14 +63,12 @@ class SmolagentsAdapter(Model):
             params["stop"] = stop_sequences
 
         # Log system prompt
-        if self.step == 0 and self.logger:
+        if self.step == 1 and self.logger:
             system_prompt = llama_messages[0]["content"] if llama_messages else ""
             self.logger.log({
                 "kind": "llm_system_prompt",
                 "system_prompt": system_prompt,
             })
-
-        self.step += 1
 
         start_time = time.time()
 
@@ -99,6 +97,8 @@ class SmolagentsAdapter(Model):
                 "duration": duration,
             })
 
+        self.step += 1
+        
         return ChatMessage(role=MessageRole.ASSISTANT, content=content)
     
 

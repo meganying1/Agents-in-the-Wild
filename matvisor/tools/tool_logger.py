@@ -51,16 +51,26 @@ class LoggedTool(Tool):
 
 
 if __name__ == "__main__":
-
+    import os
     from smolagents import CodeAgent, FinalAnswerTool
     from smolagents.models import ChatMessage, MessageRole, Model
 
     from matvisor.llm import load_llama, SmolagentsAdapter
 
+    path = os.path.dirname(os.path.abspath(__file__))
+    filename = "tool_logger_test.jsonl"
+    filepath = os.path.join(path, filename)
+
+    # 1Remove old file if exists
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
+    logger = Logger(filepath)
+
     # <|disable_thought|> should be added to the system prompt to disable internal thoughts
     system_prompt = "<|disable_thought|>You are a mathematician assistant. Use tools to help answer user questions."
     llama = load_llama("0.6")
-    model = SmolagentsAdapter(llama, logger=Logger())
+    model = SmolagentsAdapter(llama, logger=logger)
  
     class AddNumbers(Tool):
         name = "add_numbers"
@@ -74,17 +84,20 @@ if __name__ == "__main__":
 
         def forward(self, a: float, b: float) -> float:
             return a + b
-        
-    logger = Logger()
+    
     add_tool = AddNumbers()
     logged_add_tool = LoggedTool(add_tool, logger)
+    final_answer_tool = FinalAnswerTool()
+    logged_final_answer_tool = LoggedTool(final_answer_tool, logger)
     agent = CodeAgent(
-        tools=[logged_add_tool],
+        tools=[logged_add_tool, logged_final_answer_tool],
         instructions=system_prompt,
         model=model,
         add_base_tools=False,
         max_steps=2,
     )
     # Ask the agent to do something that should trigger the tool
-    result = agent.run("Please add 2 and 3 using the tool.")
-    print("Final result from agent:", result)
+    result = agent.run("Please add 2 and 3 using the tool. Only report the final result with final_answer.")
+
+    # Remove log file after test
+    #os.remove(filepath)
