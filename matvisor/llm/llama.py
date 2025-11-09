@@ -1,6 +1,6 @@
 import llama_cpp
 
-from matvisor.workshop.llm.models import qwen3_models as models
+from matvisor.llm.models import qwen3_models as models
 
 
 def load_llama(modelsize: str = "7") -> llama_cpp.Llama:

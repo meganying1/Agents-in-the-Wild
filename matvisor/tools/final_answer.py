@@ -1,10 +1,10 @@
 from smolagents import FinalAnswerTool
-from matvisor.workshop.log import JSONLogger
+from matvisor.log import Logger
 
 
 class LoggedFinalAnswerTool(FinalAnswerTool):
 
-    def __init__(self, logger: JSONLogger):
+    def __init__(self, logger: Logger):
         super().__init__()
         self.logger = logger
 

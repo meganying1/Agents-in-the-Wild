@@ -56,14 +56,12 @@ class SearchByMaterial(Tool):
 if __name__ == "__main__":
 
     import os
-    from matvisor.workshop.database.load_file import load_materials_from_file
+    from matvisor.database.load_file import load_materials_from_file
 
     path = os.path.dirname(os.path.abspath(__file__))
     filename = "AEC Material Database - Sheet1.csv"
     filepath = os.path.join(path, filename)
     df = load_materials_from_file(filepath)
-    print(df.head())
-
     search_tool = SearchByMaterial(materials_df=df)
     result = search_tool.forward(material="Terrazzoplatta")
     print("Search result:", result)
