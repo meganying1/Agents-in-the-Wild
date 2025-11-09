@@ -2,12 +2,28 @@ LICENSE
 README.md
 pyproject.toml
 matvisor/__init__.py
-matvisor/agent_build.py
-matvisor/data_generation_helper.py
+matvisor/agent.py
+matvisor/database.py
+matvisor/fewshots copy 2.py
+matvisor/fewshots copy.py
+matvisor/fewshots.py
+matvisor/models_llama copy.py
+matvisor/models_llama old.py
 matvisor/models_llama.py
+matvisor/prompt copy.py
+matvisor/prompt.py
+matvisor/run.py
+matvisor/run_raw.py
 matvisor.egg-info/PKG-INFO
 matvisor.egg-info/SOURCES.txt
 matvisor.egg-info/dependency_links.txt
 matvisor.egg-info/top_level.txt
+matvisor/tools/__init__.py
+matvisor/tools/add_material.py
+matvisor/tools/arxiv_search.py
+matvisor/tools/material_search.py
+matvisor/tools/property_search.py
+matvisor/tools/wikipedia_search.py
 tests/test_agent_build.py
 tests/test_models_llama.py
+tests/tests.py

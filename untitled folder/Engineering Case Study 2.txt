@@ -1,0 +1,1 @@
+You are a material science and design engineer expert. You are tasked with designing a Safe pressure vessel. The design should be High strength and Corrosion-resistant and be able to Safely withstand high internal pressures while resisting corrosive service environments. What material would you recommend for this application

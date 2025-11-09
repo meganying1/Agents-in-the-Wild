@@ -1,0 +1,1 @@
+You are a material science and design engineer expert. You are tasked with designing a Heat sink fin. The design should be Lightweight with high thermal conductivity and be able to Efficiently dissipate heat while minimizing overall component mass. What material would you recommend for this application
