@@ -1,5 +1,31 @@
+"""
+An adaptor to use smolagents models with the LLM interface.
+When provided a Logger instance, logs LLM interactions in the following format:
+
+* Log entries for system prompts have the following structure:
+    {
+        "kind": "llm_system_prompt",
+        "system_prompt": <system prompt content>,
+    }
+* Log entries for the llm call have the following structure:
+    {
+        "kind": "llm_input",
+        "step": <step>,
+        "input": <llm input content>,
+        "time": <time in %Y-%m-%d %H:%M:%S format>,
+    }
+* Log entries for the llm output have the following structure:
+    {
+        "kind": "llm_output",
+        "step": <step>,
+        "output": <llm output content>,
+        "duration": <duration in seconds>,
+        "time": <time in %Y-%m-%d %H:%M:%S format>,
+    }
+"""
+
 import re
-import time
+from datetime import datetime
 import llama_cpp
 from smolagents.models import ChatMessage, MessageRole, Model
 
@@ -7,6 +33,7 @@ from matvisor.log import Logger
 
 
 class SmolagentsAdapter(Model):
+
     def __init__(self, llama_model: llama_cpp.Llama, logger: Logger = None):
         super().__init__()
         self.llama = llama_model
@@ -14,6 +41,9 @@ class SmolagentsAdapter(Model):
         self.step = 1
 
     def _normalize_content(self, content):
+        """
+        Normalize the content of a message to a string.
+        """
         # If it's already a string, done
         if isinstance(content, str):
             return content
@@ -62,15 +92,23 @@ class SmolagentsAdapter(Model):
         if stop_sequences:
             params["stop"] = stop_sequences
 
-        # Log system prompt
-        if self.step == 1 and self.logger:
-            system_prompt = llama_messages[0]["content"] if llama_messages else ""
+        if self.logger:
+            # Log the LLM system prompt
+            if self.step == 1:
+                system_prompt = llama_messages[0]["content"] if llama_messages else ""
+                self.logger.log({
+                    "kind": "llm_system_prompt",
+                    "system_prompt": system_prompt,
+                })
+            # Log the LLM input
+            start_time = datetime.now()  # Start time for logging
+            latest_input = llama_messages[-1]["content"] if llama_messages else ""
             self.logger.log({
-                "kind": "llm_system_prompt",
-                "system_prompt": system_prompt,
+                "kind": "llm_input",
+                "step": self.step,
+                "input": latest_input,
+                "time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
             })
-
-        start_time = time.time()
 
         # Use chat completion API correctly: no 'prompt', pass messages=
         response = self.llama.create_chat_completion(
@@ -78,33 +116,46 @@ class SmolagentsAdapter(Model):
             **params,
         )
 
-        duration = time.time() - start_time
-
         content = response["choices"][0]["message"]["content"]
+        
         # Clean the output by removing any empty <think> tags if present
         #content = content.replace("<think>\n\n</think>\n\n", "").replace("<think>\n</think>\n\n", "")
         # Clean the outout by removing any <think> blocks
         content = re.sub(r"<think>.*?</think>\s*", "", content, flags=re.DOTALL).strip()
         
-        # Log input and output
+        # Log the LLM output
         if self.logger:
+            end_time = datetime.now()  # End time for logging
+            duration = end_time - start_time
             latest_input = llama_messages[-1]["content"] if llama_messages else ""
             self.logger.log({
-                "kind": "llm_request",
+                "kind": "llm_output",
                 "step": self.step,
-                "input": latest_input,
                 "output": content,
-                "duration": duration,
+                "duration": duration.total_seconds(),
+                "time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
             })
 
         self.step += 1
-        
+
         return ChatMessage(role=MessageRole.ASSISTANT, content=content)
     
 
 if __name__ == "__main__":
 
+    import os
+
     from matvisor.llm.llama import load_llama
+
+    path = os.path.dirname(os.path.abspath(__file__))
+    filename = "smolagent_adaptor_test.jsonl"
+    filepath = os.path.join(path, filename)
+
+    # Remove old file if exists
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
+    logger = Logger(filepath)
 
     # <|disable_thought|> should be added to the system prompt to disable internal thoughts
     messages=[
@@ -112,7 +163,7 @@ if __name__ == "__main__":
         {"role": "user", "content": "Explain what ductility means in less than five sentences."},
     ]
     llama = load_llama("0.6")
-    adapter = SmolagentsAdapter(llama, logger=Logger())
+    adapter = SmolagentsAdapter(llama, logger=logger)
     reply = adapter.generate(
         messages=messages,
         max_tokens=200,

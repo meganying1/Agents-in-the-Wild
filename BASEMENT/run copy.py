@@ -20,7 +20,7 @@ import os
 import pandas as pd
 
 # Use the agent factory and local model shims that already exist in the project
-from matvisor.agent import build_agent
+from BASEMENT.agent import build_agent
 from matvisor.models_llama import FakeModel
 
 # Prompt helpers remain in matvisor.prompt

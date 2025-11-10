@@ -1,11 +1,35 @@
-import time
+"""
+A wrapper around smolagents Tool that logs tool calls and results.
+
+* Log entries for a tool call have the following structure:
+    {
+        "kind": "tool_input",
+        "tool": <tool name>,
+        "args": <args>,
+        "kwargs": <kwargs>,
+        "time": <time in %Y-%m-%d %H:%M:%S format>,
+    }
+* Log entries for a tool result have the following structure:
+    {
+        "kind": "tool_output",
+        "tool": <tool name>,
+        "output": <tool result>,
+        "duration": <duration in seconds>,
+        "time": <time in %Y-%m-%d %H:%M:%S format>,
+    }
+"""
+
+from datetime import datetime
 from smolagents import Tool
+
 from matvisor.log import Logger
 
 
 class LoggedTool(Tool):
-
-    def __init__(self, tool: Tool, logger: Logger):
+    """
+    Accepts any smolagents Tool and a Logger instance and wraps the tool to log its calls and results.
+    """
+    def __init__(self, tool: Tool, logger: Logger = None):
         # Mirror the tool tool’s required attributes
         self.name = getattr(tool, "name", tool.__class__.__name__)
         self.description = getattr(tool, "description", "No description provided.")
@@ -22,38 +46,43 @@ class LoggedTool(Tool):
         # Let smolagents validate now that attrs & forward are in place
         super().__init__()
 
-    # Log around execution; delegate to the tool tool’s __call__
     def __call__(self, *args, **kwargs):
-
+        """
+        Log around execution; delegate to the tool tool’s __call__ method.
+        """
         # Log the tool inputs
-        self.logger.log({
-            "kind": "tool_call",
-            "tool": self.tool.name,
-            "args": args,
-            "kwargs": kwargs,
-        })
+        if self.logger:
+            start_time = datetime.now()  # Start time for logging
+            self.logger.log({
+                "kind": "tool_input",
+                "tool": self.tool.name,
+                "args": args,
+                "kwargs": kwargs,
+                "time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            })
 
-        start_time = time.time()
-
+        # Actual tool execution
         result = self.tool(*args, **kwargs)
 
-        duration = time.time() - start_time
-
         # Log the tool outputs
-        self.logger.log({
-            "kind": "tool_result",
-            "tool": self.tool.name,
-            "result": str(result),
-            "duration": duration,
-        })
+        if self.logger:
+            end_time = datetime.now()  # End time for logging
+            duration = end_time - start_time
+            self.logger.log({
+                "kind": "tool_output",
+                "tool": self.tool.name,
+                "output": result,
+                "duration": duration.total_seconds(),
+                "time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
+            })
 
         return result
 
 
 if __name__ == "__main__":
+
     import os
     from smolagents import CodeAgent, FinalAnswerTool
-    from smolagents.models import ChatMessage, MessageRole, Model
 
     from matvisor.llm import load_llama, SmolagentsAdapter
 
@@ -61,7 +90,7 @@ if __name__ == "__main__":
     filename = "tool_logger_test.jsonl"
     filepath = os.path.join(path, filename)
 
-    # 1Remove old file if exists
+    # Remove old file if exists
     if os.path.exists(filepath):
         os.remove(filepath)
 
@@ -75,7 +104,6 @@ if __name__ == "__main__":
     class AddNumbers(Tool):
         name = "add_numbers"
         description = "Adds two numbers."
-        # smolagents expects JSON-schema-like input spec
         inputs = {
             "a": {"type": "number", "description": "First number"},
             "b": {"type": "number", "description": "Second number"},
@@ -85,18 +113,17 @@ if __name__ == "__main__":
         def forward(self, a: float, b: float) -> float:
             return a + b
     
-    add_tool = AddNumbers()
-    logged_add_tool = LoggedTool(add_tool, logger)
-    final_answer_tool = FinalAnswerTool()
-    logged_final_answer_tool = LoggedTool(final_answer_tool, logger)
+    tools = [AddNumbers(), FinalAnswerTool()]
+    logged_tools = [LoggedTool(tool, logger) for tool in tools]
+
     agent = CodeAgent(
-        tools=[logged_add_tool, logged_final_answer_tool],
+        tools=logged_tools,
         instructions=system_prompt,
         model=model,
         add_base_tools=False,
         max_steps=2,
     )
-    # Ask the agent to do something that should trigger the tool
+
     result = agent.run("Please add 2 and 3 using the tool. Only report the final result with final_answer.")
 
     # Remove log file after test

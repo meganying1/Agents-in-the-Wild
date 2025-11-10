@@ -1,6 +1,6 @@
 import llama_cpp
 from smolagents.models import ChatMessage, MessageRole, Model
-from matvisor.workshop.log import JSONLogger
+from matvisor.log import Logger
 
 
 qwen3_models = {
