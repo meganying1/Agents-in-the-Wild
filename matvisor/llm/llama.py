@@ -1,17 +1,28 @@
+import os
 import llama_cpp
+from contextlib import redirect_stderr
 
 from matvisor.llm.models import qwen3_models as models
 
 
 def load_llama(modelsize: str = "7") -> llama_cpp.Llama:
+
+    # Choices are: "INFO", "WARN", "ERROR", "NONE"
+    os.environ["GGML_LOG_LEVEL"] = "NONE"
+    os.environ["LLAMA_LOG_LEVEL"] = "NONE"
+
     modelsize = str(modelsize)
-    return llama_cpp.Llama.from_pretrained(
-        repo_id=models[modelsize]["repo_id"],
-        filename=models[modelsize]["filename"],
-        n_ctx=8192,
-        n_gpu_layers=-1,
-        verbose=False,
-    )
+    # Suppress native stderr spam during init
+    devnull_path = os.devnull
+    with open(devnull_path, "w") as devnull, redirect_stderr(devnull):
+        llm = llama_cpp.Llama.from_pretrained(
+            repo_id=models[modelsize]["repo_id"],
+            filename=models[modelsize]["filename"],
+            n_ctx=8192,
+            n_gpu_layers=-1,
+            verbose=False,
+        )
+    return llm
 
 
 if __name__ == "__main__":

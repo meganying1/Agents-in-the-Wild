@@ -12,4 +12,4 @@ from matvisor.llm.models import qwen3_models_list
 
 for modelsize in qwen3_models_list:
     model = load_llama(modelsize=modelsize)
-    print(f"Model of size {modelsize} loaded successfully.")
+    print(f">>> Model of size {modelsize} loaded successfully.")
