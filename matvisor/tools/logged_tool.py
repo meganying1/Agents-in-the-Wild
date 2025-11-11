@@ -87,7 +87,7 @@ if __name__ == "__main__":
     from matvisor.llm import load_llama, SmolagentsAdapter
 
     path = os.path.dirname(os.path.abspath(__file__))
-    filename = "tool_logger_test.jsonl"
+    filename = "logged_tool_test.jsonl"
     filepath = os.path.join(path, filename)
 
     # Remove old file if exists

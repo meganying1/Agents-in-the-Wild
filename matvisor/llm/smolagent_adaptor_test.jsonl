@@ -1,0 +1,3 @@
+{"id": 0, "kind": "llm_system_prompt", "system_prompt": "<|disable_thought|>You are an expert materials science tutor."}
+{"id": 1, "kind": "llm_input", "step": 1, "input": "Explain what ductility means in less than five sentences.", "time": "2025-11-11 09:30:39"}
+{"id": 2, "kind": "llm_output", "step": 1, "output": "Ductility refers to the ability of a material to deform under stress without breaking, allowing it to be shaped or reshaped.", "duration": 0.200577, "time": "2025-11-11 09:30:40"}
