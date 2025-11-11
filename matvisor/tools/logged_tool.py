@@ -85,6 +85,7 @@ if __name__ == "__main__":
     from smolagents import CodeAgent, FinalAnswerTool
 
     from matvisor.llm import load_llama, SmolagentsAdapter
+    from matvisor.tools.tool_test import AddNumbers
 
     path = os.path.dirname(os.path.abspath(__file__))
     filename = "logged_tool_test.jsonl"
@@ -100,18 +101,6 @@ if __name__ == "__main__":
     system_prompt = "<|disable_thought|>You are a mathematician assistant. Use tools to help answer user questions."
     llama = load_llama("0.6")
     model = SmolagentsAdapter(llama, logger=logger)
- 
-    class AddNumbers(Tool):
-        name = "add_numbers"
-        description = "Adds two numbers."
-        inputs = {
-            "a": {"type": "number", "description": "First number"},
-            "b": {"type": "number", "description": "Second number"},
-        }
-        output_type = "number"
-
-        def forward(self, a: float, b: float) -> float:
-            return a + b
     
     tools = [AddNumbers(), FinalAnswerTool()]
     logged_tools = [LoggedTool(tool, logger) for tool in tools]

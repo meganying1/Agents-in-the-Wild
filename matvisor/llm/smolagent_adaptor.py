@@ -170,3 +170,6 @@ if __name__ == "__main__":
         temperature=0.5,
     )
     print(reply.content)
+
+    # Remove log file after test
+    #os.remove(filepath)

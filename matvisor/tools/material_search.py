@@ -61,7 +61,7 @@ if __name__ == "__main__":
     path = os.path.dirname(os.path.abspath(__file__))
     path = os.path.dirname(path)
     path = os.path.join(path, "database")
-    filename = "AEC Material Database - Sheet1.csv"
+    filename = "database_test.csv"
     filepath = os.path.join(path, filename)
     df = load_materials_from_file(filepath)
     search_tool = SearchByMaterial(materials_df=df)

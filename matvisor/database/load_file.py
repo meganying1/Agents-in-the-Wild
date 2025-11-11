@@ -10,10 +10,11 @@ def load_materials_from_file(filepath: str) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    
     import os
 
     path = os.path.dirname(os.path.abspath(__file__))
-    filename = "AEC Material Database - Sheet1.csv"
+    filename = "database_test.csv"
     filepath = os.path.join(path, filename)
     df = load_materials_from_file(filepath)
     print(df.head())
