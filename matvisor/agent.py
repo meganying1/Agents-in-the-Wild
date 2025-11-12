@@ -20,14 +20,17 @@ df = load_materials_from_file(filepath)
 
 def create_agent(
         llama_model: llama_cpp.Llama,
-        system_prompt: str,
+        system_prompt: str = "",
         fewshot_examples: list = None,
         max_steps: int = 10,
         logger: Logger | None = None
     ):
 
-    def create_instructions(system_prompt, fewshot_examples):
-        instructions = system_prompt
+    def create_instructions(system_prompt, fewshot_examples, thinking: bool = False):
+        instructions = ""
+        if thinking is False:
+            instructions += "<|disable_thought|>"
+        instructions += system_prompt
         if fewshot_examples is not None:
             instructions += "\n\nHere are some examples to help you:\n"
             for example in fewshot_examples:
@@ -70,12 +73,12 @@ if __name__ == "__main__":
 
     llm = load_llama(modelsize="8")
 
-    prompt = """
+    system_prompt = """
     You are an expert materials specialist. Use tools that you have and don't invent or try to access any tools that you don't have.
     """
     agent = create_agent(
         llama_model=llm,
-        system_prompt=prompt,
+        system_prompt=system_prompt,
         logger=Logger(path=log_path),
     )
     out = agent.run("What color is Terrazzoplatta?")
