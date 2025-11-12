@@ -1,5 +1,6 @@
 import os
 import llama_cpp
+from huggingface_hub import hf_hub_download
 from contextlib import redirect_stderr
 
 from matvisor.llm.models import qwen3_models as models
@@ -12,16 +13,28 @@ def load_llama(modelsize: str = "7") -> llama_cpp.Llama:
     os.environ["LLAMA_LOG_LEVEL"] = "NONE"
 
     modelsize = str(modelsize)
-    # Suppress native stderr spam during init
-    devnull_path = os.devnull
-    with open(devnull_path, "w") as devnull, redirect_stderr(devnull):
-        llm = llama_cpp.Llama.from_pretrained(
-            repo_id=models[modelsize]["repo_id"],
-            filename=models[modelsize]["filename"],
+    repo_id  = models[modelsize]["repo_id"]
+    filename = models[modelsize]["filename"]
+
+    # 1) Download first — progress is shown by default in terminal
+    #    (progress goes to stderr; we are NOT redirecting here)
+    model_path = hf_hub_download(
+        repo_id=repo_id,
+        filename=filename,
+        force_download=False,
+        # To hide progress, you could set local_files_only=True or capture stderr,
+        # but we want it visible here.
+    )
+
+    # 2) Now suppress native backend noise ONLY during model init
+    with open(os.devnull, "w") as devnull, redirect_stderr(devnull):
+        llm = llama_cpp.Llama(
+            model_path=model_path,
             n_ctx=8192,
             n_gpu_layers=-1,
             verbose=False,
         )
+
     return llm
 
 

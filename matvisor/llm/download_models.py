@@ -1,5 +1,6 @@
 """
 This script ensures all models listed in the qwen3_models_list are downloaded and accessible.
+If any of the models are not present locally, they will be downloaded automatically.
 
 To access the downloaded models, navigate to the following directory on your Mac:
 1. In Finder, press ⌘ + Shift + G (Go to Folder).
