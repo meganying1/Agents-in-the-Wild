@@ -1,7 +1,7 @@
 import os
 import ast
 import unittest
-from smolagents import Tool, CodeAgent, FinalAnswerTool
+from smolagents import CodeAgent, FinalAnswerTool
 
 from matvisor.llm import load_llama, SmolagentsAdapter
 from matvisor.tools.tool_test import AddNumbers
@@ -46,12 +46,13 @@ class TestToolLogging(unittest.TestCase):
         """
         Clean up the log file after test. Remove to keep logs for inspection.
         """
-        if os.path.exists(self.filepath):
-            os.unlink(self.filepath)
+        if True:
+            if os.path.exists(self.filepath):
+                os.unlink(self.filepath)
 
     def test_tool_logging(self):
-        result = self.agent.run("Please add 2 and 3 using the tool. Only report the final result with final_answer.")
         expected_result = self.add_numbers_tool.forward(2, 3)
+        result = self.agent.run("Please add 2 and 3 using the tool. Only report the final result with final_answer.")
         # Test the raw result
         self.assertEqual(result, expected_result)
         # Test the logged result
