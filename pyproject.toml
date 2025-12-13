@@ -9,7 +9,7 @@ include-package-data = true
 include = ["matvisor", "matvisor.*"]
 
 [tool.setuptools.package-data]
-keepdelta = ["py.typed"]
+matvisor = ["py.typed"]
 
 [project]
 name = "matvisor"

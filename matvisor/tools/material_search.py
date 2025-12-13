@@ -35,7 +35,7 @@ class SearchByMaterial(Tool):
 
             # Find properties in database using fuzzy matching
             top_matches = process.extract(material, material_names, limit=5)
-            threshold = 70
+            threshold = 80
             filtered_matches = [match for match, score in top_matches if score >= threshold]
 
             if not filtered_matches:

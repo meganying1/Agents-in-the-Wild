@@ -1,0 +1,34 @@
+modelsize,result
+0.6,"Based on the requirements, **carbon fiber-reinforced polymer (CFRP)** and **titanium** are highly recommended for the Flywheel. These materials offer:  
+- **Lightweight** (CFRP: 10–20% lighter than aluminum)  
+- **High strength** (titanium: 100–200"
+1.7,"<think>
+Okay, the user is asking for a material recommendation for a flywheel that's lightweight, high strength, and maximizes energy storage per unit mass with good fatigue resistance. Let me think through this.
+
+First, I need to recall the key properties required. Flywheels need to store a lot of energy, so specific strength (strength per unit mass) is crucial. Lightweight materials are better for energy storage because they allow for more mass to be stored without adding too much weight. Fatigue resistance is important because flywheels operate at high speeds and under cyclic loads, so the material must withstand those stresses without failing.
+
+Common materials include metals like aluminum, titanium, and composites. Let's compare them:
+
+- **Aluminum**: High specific strength, good for lightweight applications. However, it has lower fatigue resistance compared to titanium. It's also less dense than titanium, which might be a plus for weight.
+
+- **Titanium**: High specific strength and good fatigue resistance. Titanium is heavier than aluminum but offers better strength. It's more expensive but durable. It's a good balance between strength and fatigue resistance.
+
+- **Composites**: Like carbon fiber-reinforced polymers (CFRP). They can be very lightweight and have high specific strength. However, composites might not have the same fatigue resistance as metals. They can be challenging to manufacture for high-speed applications.
+
+So, the user wants to maximize energy storage per unit mass. Titanium has higher specific strength than aluminum, so that's a plus. But fatigue resistance is also important. If the flywheel is used in high-speed applications, titanium's fatigue resistance is crucial. If the application is more about weight, aluminum or composites could be better.
+
+The user didn't specify the application's speed or operating conditions, so I should consider the general case. Titanium is a safe bet for high-speed applications where both strength and fatigue resistance are needed. It's also widely used in aerospace and automotive industries for such applications.
+
+Another point: composites can be very lightweight but might not have the same fatigue resistance. If the flywheel is designed with composites, it might need to be reinforced or have a different structure to handle fatigue. However, titanium is more reliable for this.
+
+So, the recommendation would be titanium alloys like Ti-6Al-4V, which offer a good balance of specific strength and fatigue resistance. They are commonly used in flywheels for their durability and performance.
+
+I should also mention that if the application requires even more weight savings, composites could"
+4,carbon fiber reinforced polymer
+8,"For a flywheel requiring **lightweight, high strength, and maximum energy storage per unit mass** while ensuring **sufficient strength and fatigue resistance**, the optimal material is **carbon fiber-reinforced polymer (CFRP)** composites. Here's the rationale:
+
+### **Key Advantages of CFRP:**
+1. **High Strength-to-Weight Ratio**:  
+   CFRP has an exceptional **specific strength** (tensile strength/density) and **specific stiffness** (modulus of elasticity/density), enabling"
+14,Carbon Fiber Reinforced Polymer (CFRP)
+32,Carbon fiber

@@ -1,1 +1,0 @@
-You are a material science and design engineer expert. You are tasked with designing a Flywheel. The design should be Lightweight and high strength and be able to Maximize energy storage per unit mass while ensuring sufficient strength and fatigue resistance. What material would you recommend for this application
