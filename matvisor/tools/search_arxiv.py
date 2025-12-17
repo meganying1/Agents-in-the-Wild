@@ -34,7 +34,7 @@ class SearchArxiv(Tool):
 
             arxiv_api = ArxivAPIWrapper(
                 top_k_results=5,
-                doc_content_chars_max=10000,
+                doc_content_chars_max=4000,
             )
             return arxiv_api.run(query)
 

@@ -26,7 +26,7 @@ class SearchWikipedia(Tool):
             return "Error: 'query' is required."
         wikipedia_api = WikipediaAPIWrapper(
             top_k_results=5,
-            doc_content_chars_max=10000,
+            doc_content_chars_max=4000,
         )
         answer = wikipedia_api.run(query)
         return answer
