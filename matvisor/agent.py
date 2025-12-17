@@ -7,7 +7,9 @@ from matvisor.llm.smolagent_adaptor import SmolagentsAdapter
 from matvisor.database import load_materials_from_file
 from matvisor.log import Logger
 from matvisor.tools import (
-    SearchByMaterial,
+    AllMaterialNamesLocalDatabase,
+    SearchMaterialNameLocalDatabase,
+    SearchArxiv,
 )
 from matvisor.tools import LoggedTool
 
@@ -55,7 +57,9 @@ def create_agent(
 
     tools = [
         FinalAnswerTool(),
-        SearchByMaterial(materials_df=df),
+        AllMaterialNamesLocalDatabase(local_database=df),
+        SearchMaterialNameLocalDatabase(local_database=df),
+        SearchArxiv(),
     ]
 
     # Add logging to tools
@@ -92,4 +96,4 @@ if __name__ == "__main__":
     out = agent.run("Which country produces Terrazzoplatta?")
     print(out)
 
-    #os.remove(os.path.join(path, "log.jsonl"))
+    os.remove(os.path.join(path, "log.jsonl"))

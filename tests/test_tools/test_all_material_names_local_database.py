@@ -4,16 +4,17 @@ import unittest
 from smolagents import CodeAgent, FinalAnswerTool
 
 from matvisor.llm import load_llama, SmolagentsAdapter
-from matvisor.tools.tool_test import AddNumbers
+from matvisor.database import load_materials_from_file
+from matvisor.tools.all_material_names_local_database import AllMaterialNamesLocalDatabase
 from matvisor.tools import LoggedTool
 from matvisor.log import Logger
 
 
-class TestToolLogging(unittest.TestCase):
-    
+class TestSearchByMaterial(unittest.TestCase):
+
     def setUp(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        filename = "test_logged_tool.jsonl"
+        filename = "test_all_material_names_local_database.jsonl"
         self.filepath = os.path.join(path, filename)
 
         # Remove old file if exists
@@ -22,16 +23,24 @@ class TestToolLogging(unittest.TestCase):
 
         logger = Logger(self.filepath)
 
-        self.test_tool = AddNumbers()    
-        
+        parent_path = os.path.dirname(path)
+        parent_path = os.path.dirname(parent_path)
+        database_filepath = os.path.join(parent_path, "matvisor")
+        database_filepath = os.path.join(database_filepath, "database")
+        database_filepath = os.path.join(database_filepath, "database_test.csv")
+        df = load_materials_from_file(database_filepath)
+        self.test_tool = AllMaterialNamesLocalDatabase(local_database=df)  
+
         tools = [
             FinalAnswerTool(),
             self.test_tool,
         ]
         logged_tools = [LoggedTool(tool, logger) for tool in tools]
 
-        system_prompt = "<|disable_thought|>You are a mathematician assistant. Use tools to help answer user questions."
-        llama = load_llama("0.6")
+        system_prompt = """
+        <|disable_thought|>You are an expert materials specialist. Use tools that you have and don't invent or try to access any tools that you don't have.
+        """
+        llama = load_llama("8")
         model = SmolagentsAdapter(llama, logger=logger)
 
         self.agent = CodeAgent(
@@ -39,7 +48,7 @@ class TestToolLogging(unittest.TestCase):
             instructions=system_prompt,
             model=model,
             add_base_tools=False,
-            max_steps=2,
+            max_steps=3,
         )
 
     def tearDown(self):
@@ -50,18 +59,21 @@ class TestToolLogging(unittest.TestCase):
             if os.path.exists(self.filepath):
                 os.unlink(self.filepath)
 
-    def test_tool_logging(self):
-        expected_result = self.test_tool.forward(2, 3)
-        result = self.agent.run("Please add 2 and 3 using the tool. Only report the final result with final_answer.")
+    def test_search_material(self):
+        """
+        Search for materials in the database with a mildly different input.
+        """
+        example_result = "Terrazzoplatta"
+        result = self.agent.run("List all materials that you have locally in your database?")
+        print(result)
         # Test the raw result
-        self.assertEqual(result, expected_result)
+        self.assertTrue(example_result in result)
         # Test the logged result
         with open(self.filepath, "r") as f:
             lines = f.readlines()
             last_log = ast.literal_eval(lines[-1])
             self.assertEqual(last_log["kind"], "tool_output")
             self.assertEqual(last_log["tool"], "final_answer")
-            self.assertEqual(last_log["output"], expected_result)
 
 
 if __name__ == "__main__":

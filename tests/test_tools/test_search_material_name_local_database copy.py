@@ -5,7 +5,7 @@ from smolagents import CodeAgent, FinalAnswerTool
 
 from matvisor.llm import load_llama, SmolagentsAdapter
 from matvisor.database import load_materials_from_file
-from matvisor.tools.material_search import SearchByMaterial
+from matvisor.tools.search_material_name_local_database import SearchMaterialNameLocalDatabase
 from matvisor.tools import LoggedTool
 from matvisor.log import Logger
 
@@ -14,7 +14,7 @@ class TestSearchByMaterial(unittest.TestCase):
 
     def setUp(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        filename = "material_search_test.jsonl"
+        filename = "test_search_material_name_local_database.jsonl"
         self.filepath = os.path.join(path, filename)
 
         # Remove old file if exists
@@ -22,7 +22,6 @@ class TestSearchByMaterial(unittest.TestCase):
             os.remove(self.filepath)
 
         logger = Logger(self.filepath)
-
         
         parent_path = os.path.dirname(path)
         parent_path = os.path.dirname(parent_path)
@@ -30,11 +29,11 @@ class TestSearchByMaterial(unittest.TestCase):
         database_filepath = os.path.join(database_filepath, "database")
         database_filepath = os.path.join(database_filepath, "database_test.csv")
         df = load_materials_from_file(database_filepath)
-        self.search_by_material_tool = SearchByMaterial(materials_df=df)  
+        self.test_tool = SearchMaterialNameLocalDatabase(local_database=df)  
 
         tools = [
             FinalAnswerTool(),
-            self.search_by_material_tool,
+            self.test_tool,
         ]
         logged_tools = [LoggedTool(tool, logger) for tool in tools]
 

@@ -3,14 +3,14 @@ from smolagents import Tool
 from fuzzywuzzy import process
 
 
-class SearchByMaterial(Tool):
+class SearchMaterialNameLocalDatabase(Tool):
     """
     Tool for searching materials database.
     """
 
-    name = "search_by_material"
+    name = "search_material_name_local_db"
     description = """
-    Search a material database for a material to find its properties.
+    Search your local material database for a material name to find its properties.
     """
     inputs = {
         "material": {
@@ -21,17 +21,17 @@ class SearchByMaterial(Tool):
     }
     output_type = "any"
 
-    def __init__(self, materials_df):
+    def __init__(self, local_database):
         super().__init__()
-        self.materials_df = materials_df
+        self.local_database = local_database
 
     def forward(self, material: str | None = None) -> str:
         if not material:
             return "Error: 'material' is required."
         try:
-            materials_df = self.materials_df
+            local_database = self.local_database
             material_name_column = "Material Name"
-            material_names = materials_df[material_name_column].dropna().tolist()
+            material_names = local_database[material_name_column].dropna().tolist()
 
             # Find properties in database using fuzzy matching
             top_matches = process.extract(material, material_names, limit=5)
@@ -42,12 +42,12 @@ class SearchByMaterial(Tool):
                 return f"Error: No close matches found for material '{material}'."
 
             # Get all matching materials
-            matching_rows = materials_df[materials_df[material_name_column].isin(filtered_matches)]
+            matching_rows = local_database[local_database[material_name_column].isin(filtered_matches)]
 
             # Convert results to a list of dictionaries
             results = matching_rows.to_dict(orient='records')
 
-            return json.dumps(results, indent=2)
+            return json.dumps(results, indent=1)
 
         except Exception as e:
             return f"Error: {str(e)}"
@@ -64,6 +64,6 @@ if __name__ == "__main__":
     filename = "database_test.csv"
     filepath = os.path.join(path, filename)
     df = load_materials_from_file(filepath)
-    search_tool = SearchByMaterial(materials_df=df)
+    search_tool = SearchMaterialNameLocalDatabase(local_database=df)
     result = search_tool.forward(material="Terrazzoplatta")
     print("Search result:", result)
