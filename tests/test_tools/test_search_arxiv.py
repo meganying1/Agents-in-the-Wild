@@ -63,7 +63,7 @@ class TestSearchArxiv(unittest.TestCase):
         """
         material_name = "Carbon Fiber"
         expected_result = self.test_tool.forward(material_name)
-        result = self.agent.run(f"What is {material_name} in summary. Provide your answer using final_answer only.")
+        result = self.agent.run(f"What is {material_name} in under 150 words summary. Provide your answer using final_answer only.")
         #print(result)
 
         # Test the logged result
