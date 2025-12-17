@@ -1,4 +1,5 @@
 from .logged_tool import LoggedTool
 from .all_material_names_local_database import AllMaterialNamesLocalDatabase
 from .search_material_name_local_database import SearchMaterialNameLocalDatabase
+from .search_wikipedia import SearchWikipedia
 from .search_arxiv import SearchArxiv

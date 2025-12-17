@@ -4,16 +4,16 @@ import unittest
 from smolagents import CodeAgent, FinalAnswerTool
 
 from matvisor.llm import load_llama, SmolagentsAdapter
-from matvisor.tools.search_arxiv import SearchArxiv
+from matvisor.tools.search_wikipedia import SearchWikipedia
 from matvisor.tools import LoggedTool
 from matvisor.log import Logger
 
 
-class TestSearchArxiv(unittest.TestCase):
+class TestSearchWikipedia(unittest.TestCase):
 
     def setUp(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        filename = "test_search_arxiv.jsonl"
+        filename = "test_search_wikipedia.jsonl"
         self.filepath = os.path.join(path, filename)
 
         # Remove old file if exists
@@ -27,7 +27,7 @@ class TestSearchArxiv(unittest.TestCase):
         database_filepath = os.path.join(parent_path, "matvisor")
         database_filepath = os.path.join(database_filepath, "database")
         database_filepath = os.path.join(database_filepath, "database_test.csv")
-        self.test_tool = SearchArxiv()  
+        self.test_tool = SearchWikipedia()  
 
         tools = [
             FinalAnswerTool(),

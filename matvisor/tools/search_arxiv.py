@@ -8,7 +8,7 @@ class SearchArxiv(Tool):
     Create tool for searching Arxiv
     """
 
-    name = "arxiv_search"
+    name = "search_arxiv"
     description = "Search Arxiv, a free online archive of preprint and postprint manuscripts."
     inputs = {
         "query": {
@@ -34,7 +34,7 @@ class SearchArxiv(Tool):
 
             arxiv_api = ArxivAPIWrapper(
                 top_k_results=5,
-                doc_content_chars_max=10_000,
+                doc_content_chars_max=10000,
             )
             return arxiv_api.run(query)
 

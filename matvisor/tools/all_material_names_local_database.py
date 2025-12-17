@@ -7,7 +7,7 @@ class AllMaterialNamesLocalDatabase(Tool):
     Tool for retrieving all material names from local database.
     """
 
-    name = "all_material_names_local_db"
+    name = "all_material_names_local_database"
     description = """
     Retrieve all material names from local database.
     """

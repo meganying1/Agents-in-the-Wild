@@ -8,7 +8,7 @@ class SearchMaterialNameLocalDatabase(Tool):
     Tool for searching materials database.
     """
 
-    name = "search_material_name_local_db"
+    name = "search_material_name_local_database"
     description = """
     Search your local material database for a material name to find its properties.
     """
